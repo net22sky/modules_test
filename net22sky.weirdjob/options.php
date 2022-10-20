@@ -5,7 +5,7 @@
     use Bitrix\Main\HttpApplication;
     use Bitrix\Main\Loader;
     use Bitrix\Main\Config\Option;
-    use Net22sky\Weirdjob\PropertyCustom;
+    use Net22sky\Weirdjob\Utils;
 
     Loc::loadMessages(__FILE__);
 
@@ -15,7 +15,7 @@
 // подключаем  модуль
     Loader::includeModule($module_id);
 
-    $arridlocks = PropertyCustom::getIblockList();
+    $arridlocks = Utils::getIblockList();
     /*
      * Параметры модуля со значениями по умолчанию
      */

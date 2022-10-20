@@ -2,10 +2,9 @@
 
     namespace Net22sky\Weirdjob;
 
-    use Bitrix\Main\Loader;
-    use Bitrix\Iblock\IblockTable;
 
-    Loader::includeModule('iblock');
+    use Net22sky\Weirdjob\Utils;
+
 
     class PropertyCustom
     {
@@ -24,25 +23,16 @@
             );
         }
 
-        public static function getIblockList(): array{
-
-            $arrIblock = array();
-            $iblockResult = IblockTable::getList();
-            foreach ($iblockResult as $value) {
-                $arrIblock[$value['ID']] = $value['NAME'];
-            }
-            return $arrIblock;
-        }
 
         // Функция вывода свойства в панели
         public static function GetPropertyFieldHtml($arProperty, $arValue, $strHTMLControlName): string
         {
             // Описание превращаем обратно в массив ( в шаблоне также )
             $arValue["DESCRIPTION"] = unserialize($arValue["DESCRIPTION"]);
-            $html = '<select name="' . $strHTMLControlName["DESCRIPTION"] . '">';
+            $html = '<select id="selectInfoblock" name="' . $strHTMLControlName["DESCRIPTION"] . '">';
             $html .= '<option value="">(выберите инфоблок)</option>';
 
-            foreach (self::getIblockList() as $key => $val) {
+            foreach (Utils::getIblockList() as $key => $val) {
                 $html .= '<option value="' . $key . '"';
                 if ($key == $arValue["DESCRIPTION"]) {
                     $html .= 'selected="selected"';
@@ -51,7 +41,10 @@
             }
             $html .= '</select>';
 
-            // Что будет выведено:
+            /* Что будет выведено:
+               * Первый селект формируем програмно второй зависит от выбора первого - не реализован
+               *  В место второго стоит оконный выбор для демонстрации
+            */
             return '
       <table border="0" cellspacing="0" cellpadding="0" width="100%" class="internal">
         <tbody>
@@ -65,6 +58,28 @@
             ' . $html . '
         </td>
              <td align="center" width="50%">
+             <script>
+             let select = document.getElementById("selectInfoblock");
+        select.addEventListener("change", function () {
+            console.log("выбран id=" + select.value)
+            /*
+            По событию первого селекта получим разделы и сформируем второй селект
+            */
+            BX.ajax.runAction("net22sky:weirdjob.api.reviews.get",
+                {
+                    data: {
+                        id:' . $arValue["DESCRIPTION"] . ',
+                        tp:"12"
+                    },
+                }
+                ).then(function (response) {
+                    console.log(response);
+                }, function (response) {
+            });
+        });
+       
+
+    </script>
               <input name="' . $strHTMLControlName["VALUE"] . '" id="' . $strHTMLControlName["VALUE"] . '" value="' . htmlspecialcharsex($arValue["VALUE"]) . '" size="5" type="text">
               <input type="button" value="Выбрать" onClick="jsUtils.OpenWindow(\'/bitrix/admin/iblock_section_search.php?lang=' . LANG . '&IBLOCK_ID=' . $arValue["DESCRIPTION"] . '&n=' . $strHTMLControlName["VALUE"] . '\', 600, 500);">
               <br><span id="sp_' . md5($strHTMLControlName["VALUE"]) . '_' . $key . '" >' . $arItem["NAME"] . '</span>
@@ -95,4 +110,5 @@
             return $arValue;
         }
     }
-?>
+
+    ?>
