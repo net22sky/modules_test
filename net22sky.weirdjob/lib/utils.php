@@ -28,4 +28,8 @@
             }
             return $arrIblock;
         }
+
+        public function getIblockItems():array{
+            return [];
+        }
     }
